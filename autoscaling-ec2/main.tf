@@ -7,6 +7,13 @@ terraform {
   }
 }
 
+
+provider "aws" {
+  profile = "default"
+  # reference a variable from the variables.tf file
+  region  = var.region
+}
+
 # Obtain a region independent list of availability zones
 data "aws_availability_zones" "all" {
   state = "available"
@@ -22,11 +29,6 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 
-provider "aws" {
-  profile = "default"
-  # reference a variable from the variables.tf file
-  region  = var.region
-}
 
 ## We can now create the required resources
 ## Launch config, ELB, Security Groups, ASG

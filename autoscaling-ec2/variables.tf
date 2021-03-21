@@ -22,10 +22,3 @@ variable "key_name" {
  description = "Key pair filename"
  default = "ExampleKeyPair"
 }
-variable "amis" {
- description = "Base AMI to launch the instances"
- default = {
-    eu-west-1 = "ami-8da8d2e2"
-    us-west-2 = "ami-xxxxxxxx"
- }
-}
