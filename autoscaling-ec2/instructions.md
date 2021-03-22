@@ -1,6 +1,20 @@
 # Deploying an Autoscaled Cluster of EC2 instances Running a Spring Boot Application using Terraform
 
-In this exercise, you will see how Terraform can be used to deploy an autoscaled cluster of instances that are behind a load balancer.
+In this exercise, you will see how Terraform can be used to deploy an autoscaled cluster of EC2 instances that are sat behind a load balancer.
+
+## Overview
+
+Standard AWS accounts will have in each region a default network referred to as the *Default VPC*. It consists of a VPC with an Internet Gateway, and a public subnet in each availability zone. 
+
+![Default VPC](images/default-vpc.png)
+
+When deploying applications using Terraform, you do not normally deploy the network topology and the application within a single Terraform script (separation of concerns), so we will deploy an application to the Default VPC in your account.
+
+The application will consist of EC2 instances, running behind a load balancer and security groups will be assigned to the instances and the load balancer.
+
+The architecture looks like this:
+
+![Autoscaling Application Architecture](images/autoscaled-cluster.png)
 
 ## Solution
 The exercise involves creating three terraform files. Solutions to these files can be found in the same directory as this Markdown file in Github.
@@ -79,7 +93,7 @@ A solution `variables.tf` file can also be viewed here:
 
 ## Part 2 Specify the Region, CLI Profile, and AZs 
 
-A `main.tf` file in a Terraform project where you create your required resources. In this next part of the exercise, you will create that file, and edit it to specify the required resources. The architecture of what we are creating is a load balancer with an autoscaled cluster of EC2 instances. The deployment will be into the default VPC.
+A `main.tf` file in a Terraform project where you create your required resources. In this next part of the exercise, you will create that file, and edit it to specify the required resources. The architecture of what we are creating is a load balancer with an autoscaled cluster of EC2 instances. Feel free to review the diagram at the top of the instructions to refresh your memory. 
 
 1. In your project folder, create a new file called `main.tf`.
 
