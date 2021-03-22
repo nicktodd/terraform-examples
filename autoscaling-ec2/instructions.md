@@ -2,10 +2,13 @@
 
 In this exercise, you will see how Terraform can be used to deploy an autoscaled cluster of instances that are behind a load balancer.
 
-## Prerequisites
-To complete this exercise, you must be using a machine that already has access to AWS resources through the AWS CLI. For example, you have already set up your environment and permissions using `aws configure`, or you are using an EC2 machine that has the necessary permissions through the Role that it is running with.
+## Solution
+The exercise involves creating three terraform files. Solutions to these files can be found in the same directory as this Markdown file in Github.
 
-The machine you are on will also need Terraform already installed. 
+## Prerequisites
+The machine you are on will need Terraform already installed. If you are on one of our virtual machines, this will already have been set up.
+
+To complete this exercise, you must be using a machine that already has access to AWS resources through the AWS CLI. This means that you have already set up your AWS CLI environment using `aws configure`.
 
 If you have never run `aws configure` on your machine before, then complete the following steps:
 
@@ -34,11 +37,11 @@ Terraform projects typically contain a number of standard files such as:
 
 The `main.tf` file is where you set up your resources, the `variables.tf` file is where you configure any parameters that could be changed when running the deployment, such as instance size, and `outputs.tf` which specifies any values that are output when the deployment has been completed, such as the URL of the load balancer of the running application.
 
-2. Open the folder in your preferred IDE, and in your new folder, create a file called `variables.tf`.
+2. Open your new folder in your preferred IDE, and in your new folder, create a file called `variables.tf`.
 
-        If you are using VisualStudio Code, you might want to install the Terraform extension. This will give you intellisense and color coding on your files.
-
-
+```
+If you are using VisualStudio Code, you might want to install the Terraform extension. This will give you intellisense and color coding on your files.
+```
 
 ![Visual Studio Code Extension](images/terraform-code-extension.png)
 
@@ -47,15 +50,17 @@ Variables have the following basic structure:
 ```
 variable "region" {
  description = "AWS region for hosting our your network"
- default = "us-west-2"
+ default = "us-east-1"
 }
 ```
 
-In the example above, we are creating a variable with the name `region` and giving it a default value of `us-west-2` if a value is not provided. There is also a description so anyone using this Terraform configuration knows that the variable is for.
+In the structure above, we are creating a variable with the name `region` and giving it a default value of `us-east-1`. The default value will be used if a value is not provided when your run the template. 
 
-3. Add this variable to your `variables.tf` file.
+There is also a description so anyone using this Terraform configuration knows that the variable is for.
 
-4. Now add the following additional variables. 
+3. Add the region variable as defined in the structure above, to your `variables.tf` file.
+
+4. Using the provided structure as a guide, now add the following additional variables. 
 
 | Variable | Default value | Description |
 ---|---|---
@@ -68,9 +73,13 @@ In the example above, we are creating a variable with the name `region` and givi
 
 You will now see how these variables are used to create the required infrastructure.
 
+A solution `variables.tf` file can also be viewed here:
+
+[variables.tf](variables.tf)
+
 ## Part 2 Specify the Region, CLI Profile, and AZs 
 
-The main file in a Terraform project where you create your required resources is called main.tf. In this next part of the exercise, you will create that file, and add the resources. The architecture of what we are creating is a load balancer with an autoscaled cluster of EC2 instances. The deployment will be into the default VPC.
+A `main.tf` file in a Terraform project where you create your required resources. In this next part of the exercise, you will create that file, and edit it to specify the required resources. The architecture of what we are creating is a load balancer with an autoscaled cluster of EC2 instances. The deployment will be into the default VPC.
 
 1. In your project folder, create a new file called `main.tf`.
 
@@ -86,21 +95,24 @@ terraform {
   }
 }
 ```
-We must now specify the profile to use (remember we have the CLI already set up and that supports multiple profiles). We also need to specify the region to use. Now the region was specified in our `variables.tf` file. 
+The version of the AWS provider is specified so it doesn't just get the latest version which might break our template. 
 
-3. To specify the region and set the profile, add the following block to your main.tf file.
+We must now specify the AWS CLI profile to use. The AWS CLI supports multiple profiles to facilitate working with multiple accounts. We are only using one account and the default profile is simply called `default`. 
+
+We also need to specify the region to use. Now the region was specified in our `variables.tf` file. 
+
+1. To specify the region and set the profile, add the following block to your main.tf file.
 
 ```
 provider "aws" {
   profile = "default"
   region  = var.region
 }
-
 ```
 
 Note the use of the `var` namespace. This gives us access to the variables set up in `variables.tf`. 
 
-Next we will sort out the AMI to use. Our application is a Java application and we plan to use the latest Amazon Linux AMI, but how can we know what its image ID is? Terraform provides a feature to enable us to access this. 
+Next we will sort out the AMI to use. Our application is a Java application and we plan to use the latest Amazon Linux 2 AMI, but how can we know what its image ID is? Terraform provides a feature to enable us to access this. 
 
 4. Add the following entry:
 
@@ -114,10 +126,10 @@ data "aws_ami" "amazon-linux-2" {
   }
 }
 ```
+These data blocks define what Terraform refers to as *Data sources*. Essentially, they allow us to access information that is outside of Terraform so we can use it in our template. In this example, we are accessing the AMI list from Amazon for the Amazon Linux, and we are just retrieving the latest version.
 
-These data blocks give allow us to set up values for use later in the template file. You will see how this can be used later on.
 
-We need one more of these blocks to allow us to specify the availability zones to deploy to. If we are deploying to our own VPC then we must specify subnets, but when using the Default VPC, we can simply use the AZ names. However, they are different for every region, so we need to access them as another piece of data. 
+We now need to specify the availability zones to deploy to. If we are deploying to our own VPC then we must specify subnets, but when using the Default VPC, we can simply use the AZ names. However, if we are going to refer to AZ names, they are different for every region, so we need to access them as another piece of data from a Data Source. 
 
 5. To set the AZ names, add the following block:
 
@@ -161,7 +173,7 @@ Note the following.
 * The image ID is taken from the Amazon Linux data. Note the way it is accessed via the `data` namespace.
 * the security groups are an array, so we place [] brackets around the values to make them an array. We are actually just referring to a security group that we are going to create in a later section.
 * The key pair file is using the variables through the `var` namespace.
-* The userdata is a script that runs on first boot. It is used to configure the machine. In the example, it installs the latest patches, installs the JDK, gets the application, and finally launches it.
+* The userdata is an AWS specific feature where you provide a shell script or Powershell script that runs on first boot. It is used to configure the machine. In the example, it installs the latest patches, installs the JDK, gets the application, and finally launches it.
 * The create_before_destroy does what it sounds like, and if you need to replace the VM with a new one, it will create the new one before destroying the old one.
 
 2. To create the autoscaling group, add the following:
@@ -183,7 +195,7 @@ resource "aws_autoscaling_group" "example" {
 ```
 Note here that we are using the availability zones from our earlier section and also the launch configuration is set to use the one we just created.
 
-3. Now you will add the configuration for the two security groups. One for the load balancer and one for the instances:
+3. Now copy in the following section. This is the configuration for the two security groups. One for the load balancer and one for the instances:
 
 ```
 resource "aws_security_group" "elb-sg" {
@@ -249,10 +261,14 @@ Note that the ELB is using one of our security groups, and is configured to be a
 
 5. Save your file.
 
+A solution `main.tf` file can also be viewed here:
+
+[main.tf](main.tf)
+
 ## Part 4 Define an Output variable for the ELB DNS
 Once the script has run, it would be useful to know what the DNS name of the load balancer is so that we can test it. This can be set as an output variable.
 
-1. Create a file called `output.tf`. 
+1. In your project folder, create a file called `output.tf`. 
 
 2. In the file, add the following entry:
 
@@ -261,11 +277,17 @@ output "elb_dns_name" {
   value = aws_elb.my-elb.dns_name
 }
 ```
-This works a bit like the variables file in reverse! It provides the value in an output once the template has executed successfully.
+This works a bit like the variables file in reverse! Instead of providing an input to the template, it grabs an output from the template and makes it available.
+
+3. Save the file. You have now finished the configuration, so we can now check it and run it.
+
+A solution `output.tf` file can also be viewed here:
+
+[output.tf](output.tf)
 
 ## Part 5 Validate the Project
 
-1. To check that everything is all in order, at a terminal, run the following commands:
+1. To check that everything is all in order, at a terminal in the folder where your Terraform files are, run the following commands:
 
 ```
 terraform init
@@ -275,13 +297,13 @@ terraform validate
 ![Terraform Validate](images/terraform-validate.png)
 
 
-This will initialise the folder for terraform and then pick up any errors in your formatting and any variable references that are incorrect. 
+The `init` command will initialise the folder for terraform and then the `validate` commdn will pick up any errors in your formatting and any variable references that are incorrect. Note that this is only a static check, so you may still have some issues.
 
 7. Fix any errors and once there are no errors, move on to the next step where we can deploy the application!
 
 ## Part 6 Deploy the Infrastructure
 
-This should be the easy bit. The configuration is complete, so it is simply a matter of running a couple of commands to get this infrastructure deployed.
+This should be the easy bit! The configuration is complete, so it is now a matter of running a couple of commands to get this infrastructure deployed.
 
 1. At the terminal, run the following command:
 
@@ -291,9 +313,9 @@ terraform plan
 ![Terraform Plan](images/terraform-plan.png)
 
 
-This command creates what is called an execution plan. It will show you what needs to be done in order to execute this template. If you review the output you will see that it is showing you what will be created if you execute this template.
+This command creates what is called an execution plan. It will show you what needs to be done in order to execute this template. If you review the output you will see that it is showing you what will be created if you apply it.
 
-2. To execute the plan, run the following command:
+1. To apply the plan, run the following command:
 
 ```
 terraform apply
@@ -301,13 +323,17 @@ terraform apply
 
 ![Terraform Apply](images/terraform-apply.png)
 
-3. At the are you sure type prompt, type `yes` and press enter.
+3. At the *Are you sure* prompt, type `yes` and press enter.
 
-This will now create the infrastructure. Once you have set it off, if you have console access, log in the AWS console, and go to the EC2 service in the region you have used. You will see the various components getting created.
+This will now proceed to create the infrastructure. 
+
+Once it us running, if you have Web console access, log in the AWS console, and go to the EC2 service in the region you have used (N. Virginia is the expected one). You will eventually see the various components getting created.
 
 Once the script has completed, you will see the output variable of the DNS name. 
 
-3. Paste the DNS name into a browser tab. If you get a 503 error, be patient as the EC2 will take a few minutes to spin up and get linked to the load balancer. Eventually you will see a working Web page!
+![Terraform Complete](images/terraform-complete.png)
+
+3. Copy and Paste the DNS name into a browser tab. If you get a 503 error, be patient as the EC2 will take a few minutes to spin up and get linked to the load balancer. Eventually you will see a working Web page being served up from the Spring Boot application.
 
 
 ## Part 7 Tear down the infrastructure
@@ -327,4 +353,4 @@ terraform destroy
 
 ## Conclusion
 
-Well done! You have created your first Terraform based infrastructure. In later labs you will see how to manage your current infrastructure state and some of the more advanced aspects of Terraform.
+Well done! You have created and then destroyed your first Terraform based infrastructure. In later labs you will see how to manage your current infrastructure state and some of the more advanced aspects of Terraform.

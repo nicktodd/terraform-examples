@@ -9,7 +9,7 @@ terraform {
 
 
 provider "aws" {
-  profile = "training"
+  profile = "default"
   # reference a variable from the variables.tf file
   region  = var.region
 }
