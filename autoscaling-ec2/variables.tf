@@ -1,6 +1,6 @@
 variable "region" {
  description = "AWS region for hosting our your network"
- default = "us-west-2"
+ default = "us-east-1"
 }
 
 variable "instance_count" {
@@ -20,5 +20,5 @@ variable "maximum_size" {
 
 variable "key_name" {
  description = "Key pair filename"
- default = "ExampleKeyPair"
+ default = "TrainingKeyPair"
 }

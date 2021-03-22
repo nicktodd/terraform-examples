@@ -1,4 +1,4 @@
-# Deploying an autoscaled cluster of EC2 instances using Terraform
+# Deploying an Autoscaled Cluster of EC2 instances Running a Spring Boot Application using Terraform
 
 In this exercise, you will see how Terraform can be used to deploy an autoscaled cluster of instances that are behind a load balancer.
 
@@ -6,6 +6,21 @@ In this exercise, you will see how Terraform can be used to deploy an autoscaled
 To complete this exercise, you must be using a machine that already has access to AWS resources through the AWS CLI. For example, you have already set up your environment and permissions using `aws configure`, or you are using an EC2 machine that has the necessary permissions through the Role that it is running with.
 
 The machine you are on will also need Terraform already installed. 
+
+If you have never run `aws configure` on your machine before, then complete the following steps:
+
+1. At a terminal, run the following command:
+
+```
+aws configure
+```
+
+2. When prompted for the *access key*, enter the value provided by your instructor.
+3. When prompted for the *secret key*, enter the value provided by your instructor.
+4. When prompted for the *region*, enter `us-east-1` unless told otherwise by your instructor.
+5. When prompted for the output format, enter `json`.
+
+That will now have configured your AWS command line tool to use the permissions assigned to your user, which is used by Terraform when you run Terraform commands at the terminal.
 
 ## Part 1 Set up the required Terraform Variables
 
@@ -23,6 +38,9 @@ The `main.tf` file is where you set up your resources, the `variables.tf` file i
 
         If you are using VisualStudio Code, you might want to install the Terraform extension. This will give you intellisense and color coding on your files.
 
+
+
+![Visual Studio Code Extension](images/terraform-code-extension.png)
 
 Variables have the following basic structure:
 
@@ -254,6 +272,9 @@ terraform init
 terraform validate
 ```
 
+![Terraform Validate](images/terraform-validate.png)
+
+
 This will initialise the folder for terraform and then pick up any errors in your formatting and any variable references that are incorrect. 
 
 7. Fix any errors and once there are no errors, move on to the next step where we can deploy the application!
@@ -267,6 +288,8 @@ This should be the easy bit. The configuration is complete, so it is simply a ma
 ```
 terraform plan
 ```
+![Terraform Plan](images/terraform-plan.png)
+
 
 This command creates what is called an execution plan. It will show you what needs to be done in order to execute this template. If you review the output you will see that it is showing you what will be created if you execute this template.
 
@@ -275,6 +298,8 @@ This command creates what is called an execution plan. It will show you what nee
 ```
 terraform apply
 ```
+
+![Terraform Apply](images/terraform-apply.png)
 
 3. At the are you sure type prompt, type `yes` and press enter.
 
@@ -294,6 +319,8 @@ Finally, now you have see it all working, let's see how easy it is to tear the i
 ```
 terraform destroy
 ```
+
+![Terraform Destroy](images/terraform-destroy.png)
 
 2. At the 'are you sure' type prompt, type `yes` and press enter.
 
