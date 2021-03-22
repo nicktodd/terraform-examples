@@ -362,7 +362,7 @@ terraform destroy
 
 ![Terraform Destroy](images/terraform-destroy.png)
 
-2. At the 'are you sure' type prompt, type `yes` and press enter.
+2. At the *Are you sure* prompt, type `yes` and press enter.
 
 
 ## Conclusion
