@@ -82,6 +82,7 @@ There is also a description so anyone using this Terraform configuration knows t
 | minimum_size | 1 | The minimum number of instances in the autoscaling group |
 | maximum_size | 1 | The maximum number of instances in the autoscaling group |
 | key_pair | ExampleKeyPair | The name of the keypair to use for SSH access |
+| initials | [YOURINITIALS] | Your initials, eg. jd for John Doe. This is used to ensure that your resources have unique names |
 
 5. Save your `variables.tf` file.
 
@@ -166,6 +167,7 @@ We are now ready to define our resources. We will need to configure the followin
 
 ```
 resource "aws_launch_configuration" "my_launch_config" {
+  name = "launch_config_${var.initials}"
   image_id               = data.aws_ami.amazon-linux-2.image_id
   instance_type          = "t2.micro"
   security_groups        = [aws_security_group.instance-sg.id]
@@ -189,11 +191,13 @@ Note the following.
 * The key pair file is using the variables through the `var` namespace.
 * The userdata is an AWS specific feature where you provide a shell script or Powershell script that runs on first boot. It is used to configure the machine. In the example, it installs the latest patches, installs the JDK, gets the application, and finally launches it.
 * The create_before_destroy does what it sounds like, and if you need to replace the VM with a new one, it will create the new one before destroying the old one.
+* The name is concatenated with the variable containing your initials.
 
 2. To create the autoscaling group, add the following:
 
 ```
 resource "aws_autoscaling_group" "example" {
+  name = "asg_${var.initials}"
   launch_configuration = aws_launch_configuration.my_launch_config.id
   min_size = var.minimum_size
   max_size = var.maximum_size
@@ -213,7 +217,7 @@ Note here that we are using the availability zones from our earlier section and 
 
 ```
 resource "aws_security_group" "elb-sg" {
-  name = "elb-sg"
+  name = "elb_sg_${var.initials}"
   egress {
     from_port = 0
     to_port = 0
@@ -230,7 +234,7 @@ resource "aws_security_group" "elb-sg" {
 
 # Security Group for the instances
 resource "aws_security_group" "instance-sg" {
-  name = "instance-sg"
+  name = "instance_sg_${var.initials}"
   egress {
     from_port = 0
     to_port = 0
@@ -252,7 +256,7 @@ If you are familiar with security groups you will not see anything special here.
 
 ```
 resource "aws_elb" "my-elb" {
-  name = "my-elb"
+  name = "elb-${var.initials}"
   security_groups = [aws_security_group.elb-sg.id]
   availability_zones = data.aws_availability_zones.all.names
   health_check {
