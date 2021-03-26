@@ -22,3 +22,8 @@ variable "key_name" {
  description = "Key pair filename"
  default = "TrainingKeyPair"
 }
+
+variable "initials" {
+    description = "Set this to be your firstname lastname initials so that your resource names don't clash with others on the course."
+    default="nt"
+}

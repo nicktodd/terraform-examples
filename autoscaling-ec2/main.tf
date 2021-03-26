@@ -9,7 +9,7 @@ terraform {
 
 
 provider "aws" {
-  profile = "default"
+  profile = "training"
   # reference a variable from the variables.tf file
   region  = var.region
 }
@@ -35,6 +35,7 @@ data "aws_ami" "amazon-linux-2" {
 
 # The Launch Configuration
 resource "aws_launch_configuration" "my_launch_config" {
+  name = "launch_config_${var.initials}"
   image_id               = data.aws_ami.amazon-linux-2.image_id
   instance_type          = "t2.micro"
   # For now use the same SG as the ELB. This could be changed for a different one to prevent direct access
@@ -56,6 +57,7 @@ resource "aws_launch_configuration" "my_launch_config" {
 # The autoscaling group
 ## Creating AutoScaling Group
 resource "aws_autoscaling_group" "example" {
+  name = "asg_${var.initials}"
   launch_configuration = aws_launch_configuration.my_launch_config.id
   min_size = var.minimum_size
   max_size = var.maximum_size
@@ -71,7 +73,7 @@ resource "aws_autoscaling_group" "example" {
 
 # Security Group for the load balancer
 resource "aws_security_group" "elb-sg" {
-  name = "elb-sg"
+  name = "elb_sg_${var.initials}"
   egress {
     from_port = 0
     to_port = 0
@@ -88,7 +90,7 @@ resource "aws_security_group" "elb-sg" {
 
 # Security Group for the instances
 resource "aws_security_group" "instance-sg" {
-  name = "instance-sg"
+  name = "instance_sg_${var.initials}"
   egress {
     from_port = 0
     to_port = 0
@@ -106,7 +108,7 @@ resource "aws_security_group" "instance-sg" {
 
 # The Load balancer
 resource "aws_elb" "my-elb" {
-  name = "my-elb"
+  name = "elb-${var.initials}"
   security_groups = [aws_security_group.elb-sg.id]
   availability_zones = data.aws_availability_zones.all.names
   health_check {
